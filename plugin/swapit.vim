@@ -151,6 +151,7 @@
 "    finish
 "endif
 let g:loaded_swapit = 1
+let g:swap_xml_matchit = []
 
 if !exists('g:swap_lists')
     let g:swap_lists = []
@@ -277,11 +278,14 @@ fun! SwapMatch(swap_list, cur_word, direction, is_visual)
     let in_visual = 0
 
     if index(g:swap_xml_matchit, a:swap_list['name']) != -1
-        "exec 'norm! T<ma\%lviw"sp``viw"sp'
+
+        if match(getline("."),"<\\(\\/".a:cur_word."\\|".a:cur_word."\\)[^>]*>" ) == -1
+            return 0
+        endif
+
         exec "norm T<ma%"
 
         "If the cursor is on a / then jump to the front and mark
-        echo getline(".")[col(".") -1]
 
         if getline(".")[col(".") -1] != "/"
             exec "norm ma%"
