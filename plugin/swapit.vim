@@ -173,7 +173,7 @@ nnoremap <silent><c-a> :<c-u>call SwapWord(expand("<cword>"),'forward', 'no')<cr
 nnoremap <silent><c-x> :<c-u>call SwapWord(expand("<cword>"),'backward','no')<cr>
 vnoremap <silent><c-a> "dy<esc>:call SwapWord(@d,'forward','yes')<cr>
 vnoremap <silent><c-x> "dy<esc>:call SwapWord(@d,'backward','yes')<cr>
-inoremap <silent><c-b> <esc>b"sdwi <c-r>=SwapInsert()<cr>
+"inoremap <silent><c-b> <esc>b"sdwi <c-r>=SwapInsert()<cr>
 "inoremap <expr> <c-b> SwapInsert()
 
 " For adding lists
@@ -189,6 +189,35 @@ com! -nargs=+ SwapXmlMatchit call AddSwapXmlMatchit(<q-args>)
 "
 "SwapWord() main processiong event function {{{2
 fun! SwapWord (word, direction, is_visual)
+
+    "{{{3 css omnicomplete property swapping
+    if &filetype == 'css'
+        let sline = split(getline("."), ":")
+
+        if len(sline) == 2 " for a typical key:value line"
+            let temp_reg = @s
+            let cur_word = substitute(sline[1],"[^0-9A-Za-z_-]", "","g" )
+            let matches = csscomplete#CompleteCSS(0, sline[0] . ": ")
+            if index(matches,cur_word) != -1
+
+                let word_index = index(matches, cur_word)
+
+                if a:direction == 'forward'
+                    let word_index = (word_index + 1) % len(matches)
+                else
+                    let word_index = (word_index - 1) % len(matches)
+                endif
+                let swap = sline[0]. ':' . substitute(sline[1], cur_word, matches[word_index], "")
+                let result = setline(line("."), swap)
+                return 1
+            else
+                let match_list = []
+            endif
+
+            let @s = temp_reg
+        endif
+    endif
+
     if g:swap_list_dont_append == 'yes'
         let test_lists =  g:swap_lists
     else
@@ -208,8 +237,9 @@ fun! SwapWord (word, direction, is_visual)
         endif
     endfor
 
-    let out =  ProcessMatches(match_list, cur_word , a:direction, a:is_visual)
     "}}}
+
+    let out =  ProcessMatches(match_list, cur_word , a:direction, a:is_visual)
 endfun
 
 "ProcessMatches() handles various result {{{2
@@ -263,7 +293,7 @@ fun! SwapMatch(swap_list, cur_word, direction, is_visual)
         let word_index = word_index - 1
     endif
 
-    "Deal with boundary conditions
+    "Deal with boundary conditions {{{3
     if  word_index < 0 && a:direction == 'backward'
         let list_size = len(word_options)
         let word_index = list_size - 1
@@ -277,6 +307,7 @@ fun! SwapMatch(swap_list, cur_word, direction, is_visual)
     let @s = next_word
     let in_visual = 0
 
+    "XML matchit handling  {{{3
     if index(g:swap_xml_matchit, a:swap_list['name']) != -1
 
         if match(getline("."),"<\\(\\/".a:cur_word."\\|".a:cur_word."\\)[^>]*>" ) == -1
@@ -292,37 +323,38 @@ fun! SwapMatch(swap_list, cur_word, direction, is_visual)
         endif
 
         exec "norm lviw\"sp`aviw\"sp"
+    " Regular swaps {{{3
     else
 
         if a:is_visual == 'yes'
-            if next_word =~ "\[\\W\\s\]"
+            if next_word =~ "\W"
                 let in_visual = 1
                 exec 'norm! gv"sp`[v`]'
             else
                 exec 'norm! gv"spb'
             endif
         else
-            if next_word =~ "\[\\W\\s\]"
+            if next_word =~ "\W"
                 let in_visual = 1
-                exec 'norm! viw"sp`[v`]'
+                exec 'norm! maviw"sp`[v`]'
             else
-                exec 'norm! viw"spb'
+                exec 'norm! maviw"spb`a'
             endif
         endif
     endif
-
+    " 3}}}
 
     "TODO VISHACK This is a silly hack to fix the visual range. if the v ends with
     "a word character the visual range is onw column over but not for
     "non word characters.
 
-    if in_visual == 1 && next_word =~ "\\w$" && &selection == 'inclusive'
-        exec 'norm! h'
-    endif
+"    if in_visual == 1 && next_word =~ "\\w$" && &selection == 'inclusive'
+"        exec 'norm! h'
+"    endif
 
-    if in_visual == 1 && (next_word =~  "\\W$") && &selection == 'exclusive'
-        exec 'norm! l'
-    endif
+"    if in_visual == 1 && (next_word =~  "\\W$") && &selection == 'exclusive'
+"        exec 'norm! l'
+"    endif
 
     let @s = temp_reg
     "    echo "Swap: " . a:swap_list['name'] .' '. a:cur_word . " > " . next_word

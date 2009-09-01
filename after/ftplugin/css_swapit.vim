@@ -1,7 +1,6 @@
-SwapList fontstyle italic bold normal strike
-SwapList abs_rel absolute relative
-SwapList flor_l_r left right none both
-SwapList display_b_i block inline none
-SwapList boders border-top border-left border-right border-bottom
-SwapList text_deco underline none line-throught
-SwapList top_bottom top bottom left right
+ClearSwapList
+
+SwapList formats h1 h2 h3 h4 p strong em a
+SwapList lists ol ul
+SwapList tables td tr thead tbody table
+SwapList layout div span script style
