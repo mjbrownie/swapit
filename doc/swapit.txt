@@ -1,6 +1,6 @@
 swapit.txt Extensible Keyword Swapper
 
-Author: Michael Brown
+Author: Michael Brown <mjbrownie @ NOSPAMMY gmail.com>
 
             Usage Notes
 
@@ -21,6 +21,8 @@ Author: Michael Brown
 4. Filetype Swaps                                       |swapit-filetype|
 
     4.1 Defining a filetype swap list                   |swapit-cleanup|
+
+5. Omnicomplete Swapping                                |swapit-omnicomplete|
 
 ================================================================================
 1. SwapIt Introduction                                  *swapit-intro*
@@ -163,7 +165,7 @@ Author: Michael Brown
 
         ~/.vim/after/ftplugin/{filetype}_swapit.vim
 
-        The filetype file can be used to define custom swaps for 
+        The filetype file can be used to define custom swaps for
 
     4.2 Clearing a Swap List                    *ClearSwapList* *swapit-cleanup*
 
@@ -171,3 +173,17 @@ Author: Michael Brown
         put this at the top of an after/ftplugin file.
 
         ClearSwapList
+
+5. Omnicomplete Swapping                                *swapit-omnicomplete*
+
+    Rather than repeating SwapLists that are similar to omnicomplete patterns
+    it would be more preferable to use the omnicomplete function for the
+    language.
+
+    Swapit is capable of experimental looking up omnicomplete patterns
+    currently only for CSS as of writing. I'd appreciate any ideas and
+    additions in this area.
+
+    Please fork.
+
+    http://github.com/mjbrownie/swapit/tree/master
