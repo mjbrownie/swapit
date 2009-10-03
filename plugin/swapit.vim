@@ -190,31 +190,12 @@ com! -nargs=+ SwapXmlMatchit call AddSwapXmlMatchit(<q-args>)
 "SwapWord() main processiong event function {{{2
 fun! SwapWord (word, direction, is_visual)
 
+    let comfunc_result = 0
     "{{{3 css omnicomplete property swapping
-    if &filetype == 'css'
-        let sline = split(getline("."), ":")
-
-        if len(sline) == 2 " for a typical key:value line"
-            let temp_reg = @s
-            let cur_word = substitute(sline[1],"[^0-9A-Za-z_-]", "","g" )
-            let matches = csscomplete#CompleteCSS(0, sline[0] . ": ")
-            if index(matches,cur_word) != -1
-
-                let word_index = index(matches, cur_word)
-
-                if a:direction == 'forward'
-                    let word_index = (word_index + 1) % len(matches)
-                else
-                    let word_index = (word_index - 1) % len(matches)
-                endif
-                let swap = sline[0]. ':' . substitute(sline[1], cur_word, matches[word_index], "")
-                let result = setline(line("."), swap)
-                return 1
-            else
-                let match_list = []
-            endif
-
-            let @s = temp_reg
+    if exists('b:swap_completefunc')
+        exec "let complete_func = " . b:swap_completefunc . "('". a:direction ."')"
+        if ( comfunc_result == 1 )
+            return 1
         endif
     endif
 
@@ -288,17 +269,9 @@ fun! SwapMatch(swap_list, cur_word, direction, is_visual)
     let word_index = index(word_options, a:cur_word)
 
     if a:direction == 'forward'
-        let word_index = word_index + 1
+        let word_index = ( word_index + 1 ) % len(word_options)
     else
-        let word_index = word_index - 1
-    endif
-
-    "Deal with boundary conditions {{{3
-    if  word_index < 0 && a:direction == 'backward'
-        let list_size = len(word_options)
-        let word_index = list_size - 1
-    elseif word_index >= len(word_options)
-        let word_index = 0
+        let word_index = ( word_index - 1 ) % len(word_options)
     endif
 
     let next_word = word_options[word_index]
