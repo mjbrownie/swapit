@@ -33,6 +33,5 @@ fun! cssswapit#CssSwapComplete(direction)
         let @s = temp_reg
 
     endif
-    exec 'norm viw"sp'
     return 0
 endfun
