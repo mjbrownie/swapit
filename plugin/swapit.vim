@@ -221,6 +221,7 @@ fun! SwapWord (word, direction, is_visual)
     "}}}
 
     let out =  ProcessMatches(match_list, cur_word , a:direction, a:is_visual)
+    return ''
 endfun
 
 "ProcessMatches() handles various result {{{2
@@ -462,6 +463,7 @@ else
                 \{'name':'ON/OFF', 'options': ['ON','OFF']},
                 \{'name':'comparison_operator', 'options': ['<','<=','==', '>=', '>' , '=~', '!=']},
                 \{'name': 'datatype', 'options': ['bool', 'char','int','unsigned int', 'float','long', 'double']},
+                \{'name':'weekday', 'options': ['Sunday','Monday', 'Tuesday', 'Wednesday','Thursday', 'Friday', 'Saturday']},
                 \]
 endif
 "NOTE: comparison_operator doesn't work yet but there in the hope of future

@@ -1,10 +1,14 @@
-fun cssswapit#CssSwapComplete(direction)
-    let sline = split(getline("."), ":")
+fun! cssswapit#CssSwapComplete(direction)
 
-    if len(sline) == 2 " for a typical key:value line"
+    let column = col(".")
+    let line = getline(".")
+
+    let keyword = &iskeyword
+    setlocal iskeyword+=-
+    let cur_word = expand('<cword>')
+    if match (getline("."),"[0-9A-Za-z_-]\+\s*:\s*[0-9A-Za-z_-]\+")
         let temp_reg = @s
-        let cur_word = substitute(sline[1],"[^0-9A-Za-z_-]", "","g" )
-        let matches = csscomplete#CompleteCSS(0, sline[0] . ": ")
+        let matches = csscomplete#CompleteCSS(0, substitute(strpart(getline('.'),0, col('.')),':[^:]*$'," : ",""))
 
         if index(matches,cur_word) != -1
             let word_index = index(matches, cur_word)
@@ -14,12 +18,21 @@ fun cssswapit#CssSwapComplete(direction)
             else
                 let word_index = (word_index - 1) % len(matches)
             endif
-            let swap = sline[0]. ':' . substitute(sline[1], cur_word, matches[word_index], "")
-            let result = setline(line("."), swap)
+
+            if match (matches[word_index],'[^0-9A-Za-z_-]') != -1 "This is to stop url(
+                return 0
+            endif
+            let @s = matches[word_index]
+
+            exec 'norm viw"sp'
+            exec "setlocal iskeyword=". keyword
+
             return 1
         endif
 
         let @s = temp_reg
+
     endif
+    exec 'norm viw"sp'
     return 0
 endfun
