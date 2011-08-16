@@ -203,3 +203,6 @@ Author: Michael Brown <mjbrownie @ NOSPAMMY gmail.com>
     autoload/cssswapit.vim. The function must take one argument specifying the
     direction 'forward' or 'backward' and return 1 on a successful swap or 0
     if no matches are made. Look at the cssswapit for an example.
+
+==============================================================================
+vim:tw=78:fo=tcroq2mM:et:sts=2:sw=2:ft=help:norl:fdm=marker:

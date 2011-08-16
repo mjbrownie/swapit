@@ -469,4 +469,6 @@ endif
 "NOTE: comparison_operator doesn't work yet but there in the hope of future
 "
 "capability
-"
+
+" modeline: {{{
+" vim: expandtab softtabstop=4 shiftwidth=4 foldmethod=marker
