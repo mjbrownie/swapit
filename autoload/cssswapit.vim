@@ -35,3 +35,6 @@ fun! cssswapit#CssSwapComplete(direction)
     endif
     return 0
 endfun
+
+" modeline: {{{
+" vim: expandtab softtabstop=4 shiftwidth=4 foldmethod=marker
