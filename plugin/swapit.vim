@@ -229,9 +229,9 @@ fun! ProcessMatches(match_list, cur_word, direction, is_visual)
 
     if len(a:match_list) == 0
         if a:direction == 'forward'
-            exec "normal \<Plug>SwapItFallbackIncrement"
-        else
-            exec "normal \<Plug>SwapItFallbackDecrement"
+        exec 'normal' (v:count ? v:count : '') . "\<Plug>SwapItFallbackIncrement"
+    else
+        exec 'normal' (v:count ? v:count : '') . "\<Plug>SwapItFallbackDecrement"
         endif
         return ''
     endif
@@ -252,15 +252,6 @@ fun! ProcessMatches(match_list, cur_word, direction, is_visual)
         call ShowSwapChoices(a:match_list, a:cur_word, a:direction, a:is_visual)
     endif
 
-endfun
-"PassThrough() handles no match event {{{2
-fun! PassThrough(direction)
-    ""echo "Swap: No match for " . cur_word
-    if a:direction == 'forward'
-        exec "normal! \<Plug>SwapItFallbackIncrement"
-    else
-        exec "normal! \<Plug>SwapItFallbackDecrement"
-    endif
 endfun
 
 " SwapMatch()  handles match {{{2
