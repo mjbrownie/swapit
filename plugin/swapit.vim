@@ -229,9 +229,9 @@ fun! ProcessMatches(match_list, cur_word, direction, is_visual)
 
     if len(a:match_list) == 0
         if a:direction == 'forward'
-            exec "normal \<Plug>SwapItFallbackIncrement"
-        else
-            exec "normal \<Plug>SwapItFallbackDecrement"
+        exec 'normal' (v:count ? v:count : '') . "\<Plug>SwapItFallbackIncrement"
+    else
+        exec 'normal' (v:count ? v:count : '') . "\<Plug>SwapItFallbackDecrement"
         endif
         return ''
     endif
