@@ -253,15 +253,6 @@ fun! ProcessMatches(match_list, cur_word, direction, is_visual)
     endif
 
 endfun
-"PassThrough() handles no match event {{{2
-fun! PassThrough(direction)
-    ""echo "Swap: No match for " . cur_word
-    if a:direction == 'forward'
-        exec "normal! \<Plug>SwapItFallbackIncrement"
-    else
-        exec "normal! \<Plug>SwapItFallbackDecrement"
-    endif
-endfun
 
 " SwapMatch()  handles match {{{2
 fun! SwapMatch(swap_list, cur_word, direction, is_visual)
