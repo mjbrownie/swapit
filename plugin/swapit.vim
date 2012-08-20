@@ -171,8 +171,8 @@ endif
 " For executing the listing
 nnoremap <silent><c-a> :<c-u>call SwapWord(expand("<cword>"),'forward', 'no')<cr>
 nnoremap <silent><c-x> :<c-u>call SwapWord(expand("<cword>"),'backward','no')<cr>
-vnoremap <silent><c-a> "dy<esc>:call SwapWord(@d,'forward','yes')<cr>
-vnoremap <silent><c-x> "dy<esc>:call SwapWord(@d,'backward','yes')<cr>
+vnoremap <silent><c-a> "dy:call SwapWord(@d,'forward','yes')<cr>
+vnoremap <silent><c-x> "dy:call SwapWord(@d,'backward','yes')<cr>
 "inoremap <silent><c-b> <esc>b"sdwi <c-r>=SwapInsert()<cr>
 "inoremap <expr> <c-b> SwapInsert()
 
