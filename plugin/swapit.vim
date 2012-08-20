@@ -106,13 +106,15 @@
 "               Note: This alpha version doesnt create the directory structure
 "
 "               To integrate with other incrementor scripts (such as
-"               speeddating.vim or monday.vim), :nmap
+"               speeddating.vim or monday.vim), map
 "               <Plug>SwapItFallbackIncrement and <Plug>SwapItFallbackDecrement
 "               to the keys that should be invoked when swapit doesn't have a
 "               proper option. For example for speeddating.vim:
 "
 "               nmap <Plug>SwapItFallbackIncrement <Plug>SpeedDatingUp
 "               nmap <Plug>SwapItFallbackDecrement <Plug>SpeedDatingDown
+"               vmap <Plug>SwapItFallbackIncrement <Plug>SpeedDatingUp
+"               vmap <Plug>SwapItFallbackDecrement <Plug>SpeedDatingDown
 "
 "         Bugs: {{{2
 "
@@ -165,6 +167,9 @@ endif
 if empty(maparg('<Plug>SwapItFallbackDecrement', 'n'))
     nnoremap <Plug>SwapItFallbackDecrement <c-x>
 endif
+" Don't define default fallback mappings for visual mode; there is no such
+" built-in functionality. The undefined <Plug> mappings will cause a beep, just
+" as we want.
 
 "Command/AutoCommand Configuration {{{1
 "
@@ -228,10 +233,11 @@ endfun
 fun! ProcessMatches(match_list, cur_word, direction, is_visual)
 
     if len(a:match_list) == 0
+        let visual_prefix = (a:is_visual == 'yes' ? 'gv' : '')
         if a:direction == 'forward'
-        exec 'normal' (v:count ? v:count : '') . "\<Plug>SwapItFallbackIncrement"
-    else
-        exec 'normal' (v:count ? v:count : '') . "\<Plug>SwapItFallbackDecrement"
+            exec 'normal' visual_prefix . (v:count ? v:count : '') . "\<Plug>SwapItFallbackIncrement"
+        else
+            exec 'normal' visual_prefix . (v:count ? v:count : '') . "\<Plug>SwapItFallbackDecrement"
         endif
         return ''
     endif
