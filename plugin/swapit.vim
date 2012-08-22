@@ -124,10 +124,6 @@
 "               The visual mode is inconsistent on highlighting the end of a
 "               phrase occasionally one character under see VISHACK
 "
-"               Visual selection bug: if you have set selection=exclusive. You
-"               might have trouble with the last character not being selected
-"               on a multi word swap
-"
 "        To Do: {{{2
 "
 "               - improve filetype handling
@@ -300,14 +296,14 @@ fun! SwapMatch(swap_list, cur_word, direction, is_visual)
         if a:is_visual == 'yes'
             if next_word =~ '\W'
                 let in_visual = 1
-                exec 'norm! gv"sp`[v`]'
+                exec 'norm! gv"sp`[v`]' . (&selection ==# 'exclusive' ? 'l' : '')
             else
                 exec 'norm! gv"spb'
             endif
         else
             if next_word =~ '\W'
                 let in_visual = 1
-                exec 'norm! maviw"sp`[v`]'
+                exec 'norm! maviw"sp`[v`]' . (&selection ==# 'exclusive' ? 'l' : '')
             else
                 exec 'norm! maviw"spb`a'
             endif
