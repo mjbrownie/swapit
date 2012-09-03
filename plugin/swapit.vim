@@ -339,8 +339,9 @@ fun! ShowSwapChoices(match_list, cur_word, direction, is_visual)
 
     "Generate the prompt {{{3
     for swap_list in a:match_list
+        let next_index = (index(swap_list['options'], a:cur_word) + (a:direction == 'forward' ? 1 : -1)) % len(swap_list['options'])
         let confirm_options =  confirm_options . ' ' . a_opts[con_index] . " . " . swap_list['name'] . ' (' .
-                    \a:cur_word . ' > ' . swap_list['options'][index(swap_list['options'], a:cur_word) + 1] . ') '
+                    \a:cur_word . ' > ' . swap_list['options'][next_index] . ') '
 
         "        For some reason concatenating stuffs up the string, using an
         "        if con_index > 0
