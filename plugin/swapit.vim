@@ -170,10 +170,10 @@ endif
 "Command/AutoCommand Configuration {{{1
 "
 " For executing the listing
-nnoremap <silent><c-a> :<c-u>call SwapWord(expand("<cword>"),'forward', 'no')<cr>
-nnoremap <silent><c-x> :<c-u>call SwapWord(expand("<cword>"),'backward','no')<cr>
-vnoremap <silent><c-a> "dy:call SwapWord(@d,'forward','yes')<cr>
-vnoremap <silent><c-x> "dy:call SwapWord(@d,'backward','yes')<cr>
+nnoremap <silent><c-a> :<c-u>call SwapWord(expand("<cword>"), v:count, 'forward', 'no')<cr>
+nnoremap <silent><c-x> :<c-u>call SwapWord(expand("<cword>"), v:count, 'backward','no')<cr>
+vnoremap <silent><c-a> :<c-u>let swap_count = v:count<Bar>call SwapWord(<SID>GetSelection(), swap_count, 'forward', 'yes')<Bar>unlet swap_count<cr>
+vnoremap <silent><c-x> :<c-u>let swap_count = v:count<Bar>call SwapWord(<SID>GetSelection(), swap_count, 'backward','yes')<Bar>unlet swap_count<cr>
 "inoremap <silent><c-b> <esc>b"sdwi <c-r>=SwapInsert()<cr>
 "inoremap <expr> <c-b> SwapInsert()
 
@@ -181,15 +181,28 @@ vnoremap <silent><c-x> "dy:call SwapWord(@d,'backward','yes')<cr>
 com! -nargs=* SwapList call AddSwapList(<q-args>)
 com! ClearSwapList let g:swap_lists = []
 com! SwapIdea call OpenSwapFileType()
-com! -range -nargs=1 SwapWordVisual call SwapWord(getline('.'),<f-args>,'yes')
+com! -range -nargs=1 SwapWordVisual call SwapWord(getline('.'), 1, <f-args>,'yes')
 "au BufEnter call LoadFileTypeSwapList()
 com! SwapListLoadFT call LoadFileTypeSwapList()
 com! -nargs=+ SwapXmlMatchit call AddSwapXmlMatchit(<q-args>)
 "Swap Processing Functions {{{1
 "
 "
+" <SID>GetSelection() retrieves the selected text without clobbering a register {{{2
+fun! s:GetSelection()
+    let save_clipboard = &clipboard
+    set clipboard= " Avoid clobbering the selection and clipboard registers.
+        let save_reg = getreg('"')
+        let save_regmode = getregtype('"')
+            execute 'silent! normal! gvy'
+            let selection = @"
+        call setreg('"', save_reg, save_regmode)
+    let &clipboard = save_clipboard
+    return selection
+endfun
+
 "SwapWord() main processiong event function {{{2
-fun! SwapWord (word, direction, is_visual)
+fun! SwapWord (word, count, direction, is_visual)
 
     let comfunc_result = 0
     "{{{3 css omnicomplete property swapping
@@ -221,26 +234,26 @@ fun! SwapWord (word, direction, is_visual)
 
     "}}}
 
-    let out =  ProcessMatches(match_list, cur_word , a:direction, a:is_visual)
+    let out =  ProcessMatches(match_list, cur_word , a:count, a:direction, a:is_visual)
     return ''
 endfun
 
 "ProcessMatches() handles various result {{{2
-fun! ProcessMatches(match_list, cur_word, direction, is_visual)
+fun! ProcessMatches(match_list, cur_word, count, direction, is_visual)
 
     if len(a:match_list) == 0
         let visual_prefix = (a:is_visual == 'yes' ? 'gv' : '')
         if a:direction == 'forward'
-            exec 'normal' visual_prefix . (v:count ? v:count : '') . "\<Plug>SwapItFallbackIncrement"
+            exec 'normal' visual_prefix . (a:count ? a:count : '') . "\<Plug>SwapItFallbackIncrement"
         else
-            exec 'normal' visual_prefix . (v:count ? v:count : '') . "\<Plug>SwapItFallbackDecrement"
+            exec 'normal' visual_prefix . (a:count ? a:count : '') . "\<Plug>SwapItFallbackDecrement"
         endif
         return ''
     endif
 
     if len(a:match_list) == 1
         let swap_list = a:match_list[0]
-        call SwapMatch(swap_list, a:cur_word, a:direction, a:is_visual)
+        call SwapMatch(swap_list, a:cur_word, (a:count ? a:count : 1), a:direction, a:is_visual)
         return ''
     endif
 
@@ -251,86 +264,96 @@ fun! ProcessMatches(match_list, cur_word, direction, is_visual)
     endif
 
     if len(a:match_list) > 1
-        call ShowSwapChoices(a:match_list, a:cur_word, a:direction, a:is_visual)
+        call ShowSwapChoices(a:match_list, a:cur_word, (a:count ? a:count : 1), a:direction, a:is_visual)
     endif
 
 endfun
 
 " SwapMatch()  handles match {{{2
-fun! SwapMatch(swap_list, cur_word, direction, is_visual)
+fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
 
     let word_options = a:swap_list['options']
     let word_index = index(word_options, a:cur_word)
 
     if a:direction == 'forward'
-        let word_index = ( word_index + 1 ) % len(word_options)
+        let word_index = ( word_index + a:count ) % len(word_options)
     else
-        let word_index = ( word_index - 1 ) % len(word_options)
+        let word_index = ( word_index - a:count ) % len(word_options)
     endif
 
     let next_word = word_options[word_index]
 
-    let temp_reg = @s
-    let @s = next_word
+    let save_clipboard = &clipboard
+    set clipboard= " Avoid clobbering the selection and clipboard registers.
+    let save_reg = @"
+    let save_regmode = getregtype('"')
+    let @" = next_word
     let in_visual = 0
 
-    "XML matchit handling  {{{3
-    if index(g:swap_xml_matchit, a:swap_list['name']) != -1
+    try
+        let temp_mark = (v:version < 702 ? 'a' : '"')
 
-        if match(getline("."),"<\\(\\/".a:cur_word."\\|".a:cur_word."\\)[^>]*>" ) == -1
-            return 0
-        endif
+        "XML matchit handling  {{{3
+        if index(g:swap_xml_matchit, a:swap_list['name']) != -1
 
-        exec "norm T<ma%"
-
-        "If the cursor is on a / then jump to the front and mark
-
-        if getline(".")[col(".") -1] != "/"
-            exec "norm ma%"
-        endif
-
-        exec "norm lviw\"sp`aviw\"sp"
-    " Regular swaps {{{3
-    else
-
-        if a:is_visual == 'yes'
-            if next_word =~ '\W'
-                let in_visual = 1
-                exec 'norm! gv"sp`[v`]' . (&selection ==# 'exclusive' ? 'l' : '')
-            else
-                exec 'norm! gv"spb'
+            if match(getline("."),"<\\(\\/".a:cur_word."\\|".a:cur_word."\\)[^>]*>" ) == -1
+                return 0
             endif
+
+            exec 'norm! T<m' . temp_mark
+            norm %
+
+            "If the cursor is on a / then jump to the front and mark
+
+            if getline(".")[col(".") -1] != "/"
+                exec 'norm! m' . temp_mark
+                norm %
+            endif
+
+            exec "norm! lviw\"\"pg`" . temp_mark . "viw\"\"p"
+        " Regular swaps {{{3
         else
-            if next_word =~ '\W'
-                let in_visual = 1
-                exec 'norm! maviw"sp`[v`]' . (&selection ==# 'exclusive' ? 'l' : '')
+
+            if a:is_visual == 'yes'
+                if next_word =~ '\W'
+                    let in_visual = 1
+                    exec 'norm! gv""pg`[vg`]' . (&selection ==# 'exclusive' ? 'l' : '')
+                else
+                    exec 'norm! gv""pg`['
+                endif
             else
-                exec 'norm! maviw"spb`a'
+                if next_word =~ '\W'
+                    let in_visual = 1
+                    exec 'norm! m' . temp_mark . 'viw""pg`[vg`]' . (&selection ==# 'exclusive' ? 'l' : '')
+                else
+                    exec 'norm! m' . temp_mark . 'viw""pg`' . temp_mark
+                endif
             endif
         endif
-    endif
-    " 3}}}
+        " 3}}}
 
-    "TODO VISHACK This is a silly hack to fix the visual range. if the v ends with
-    "a word character the visual range is onw column over but not for
-    "non word characters.
+        "TODO VISHACK This is a silly hack to fix the visual range. if the v ends with
+        "a word character the visual range is onw column over but not for
+        "non word characters.
 
-"    if in_visual == 1 && next_word =~ "\\w$" && &selection == 'inclusive'
-"        exec 'norm! h'
-"    endif
+"       if in_visual == 1 && next_word =~ "\\w$" && &selection == 'inclusive'
+"           exec 'norm! h'
+"       endif
 
-"    if in_visual == 1 && (next_word =~  "\\W$") && &selection == 'exclusive'
-"        exec 'norm! l'
-"    endif
-
-    let @s = temp_reg
-    "    echo "Swap: " . a:swap_list['name'] .' '. a:cur_word . " > " . next_word
-    "\. ' ' . word_index . ' ' . a:direction . ' ' . len(word_options)
-    return 1
+"       if in_visual == 1 && (next_word =~  "\\W$") && &selection == 'exclusive'
+"           exec 'norm! l'
+"       endif
+        return 1
+    finally
+        call setreg('"', save_reg, save_regmode)
+        let &clipboard = save_clipboard
+        "    echo "Swap: " . a:swap_list['name'] .' '. a:cur_word . " > " . next_word
+        "\. ' ' . word_index . ' ' . a:direction . ' ' . len(word_options)
+    endtry
 endfun
 "
 "ShowSwapChoices() shows alternative swaps {{{2
-fun! ShowSwapChoices(match_list, cur_word, direction, is_visual)
+fun! ShowSwapChoices(match_list, cur_word, count, direction, is_visual)
 
     let a_opts = ['A','B','C','D','E','F','G']
     let con_index = 0
@@ -371,7 +394,7 @@ fun! ShowSwapChoices(match_list, cur_word, direction, is_visual)
     endif
     "   }}}
     if choice != 0
-        call SwapMatch(a:match_list[choice -1], a:cur_word, a:direction, a:is_visual)
+        call SwapMatch(a:match_list[choice -1], a:cur_word, a:count, a:direction, a:is_visual)
     else
         echo "Swap: Cancelled"
     endif
