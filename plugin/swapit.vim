@@ -283,63 +283,69 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
 
     let next_word = word_options[word_index]
 
-    let temp_reg = @s
-    let @s = next_word
+    let save_clipboard = &clipboard
+    set clipboard= " Avoid clobbering the selection and clipboard registers.
+    let save_reg = @"
+    let save_regmode = getregtype('"')
+    let @" = next_word
     let in_visual = 0
 
-    "XML matchit handling  {{{3
-    if index(g:swap_xml_matchit, a:swap_list['name']) != -1
+    try
+        "XML matchit handling  {{{3
+        if index(g:swap_xml_matchit, a:swap_list['name']) != -1
 
-        if match(getline("."),"<\\(\\/".a:cur_word."\\|".a:cur_word."\\)[^>]*>" ) == -1
-            return 0
-        endif
-
-        exec "norm T<ma%"
-
-        "If the cursor is on a / then jump to the front and mark
-
-        if getline(".")[col(".") -1] != "/"
-            exec "norm ma%"
-        endif
-
-        exec "norm lviw\"sp`aviw\"sp"
-    " Regular swaps {{{3
-    else
-
-        if a:is_visual == 'yes'
-            if next_word =~ '\W'
-                let in_visual = 1
-                exec 'norm! gv"sp`[v`]' . (&selection ==# 'exclusive' ? 'l' : '')
-            else
-                exec 'norm! gv"spb'
+            if match(getline("."),"<\\(\\/".a:cur_word."\\|".a:cur_word."\\)[^>]*>" ) == -1
+                return 0
             endif
+
+            exec "norm T<ma%"
+
+            "If the cursor is on a / then jump to the front and mark
+
+            if getline(".")[col(".") -1] != "/"
+                exec "norm ma%"
+            endif
+
+            exec "norm lviw\"\"p`aviw\"\"p"
+        " Regular swaps {{{3
         else
-            if next_word =~ '\W'
-                let in_visual = 1
-                exec 'norm! maviw"sp`[v`]' . (&selection ==# 'exclusive' ? 'l' : '')
+
+            if a:is_visual == 'yes'
+                if next_word =~ '\W'
+                    let in_visual = 1
+                    exec 'norm! gv""pg`[vg`]' . (&selection ==# 'exclusive' ? 'l' : '')
+                else
+                    exec 'norm! gv""pg`['
+                endif
             else
-                exec 'norm! maviw"spb`a'
+                if next_word =~ '\W'
+                    let in_visual = 1
+                    exec 'norm! maviw""p`[v`]' . (&selection ==# 'exclusive' ? 'l' : '')
+                else
+                    exec 'norm! maviw""pg`a'
+                endif
             endif
         endif
-    endif
-    " 3}}}
+        " 3}}}
 
-    "TODO VISHACK This is a silly hack to fix the visual range. if the v ends with
-    "a word character the visual range is onw column over but not for
-    "non word characters.
+        "TODO VISHACK This is a silly hack to fix the visual range. if the v ends with
+        "a word character the visual range is onw column over but not for
+        "non word characters.
 
-"    if in_visual == 1 && next_word =~ "\\w$" && &selection == 'inclusive'
-"        exec 'norm! h'
-"    endif
+"       if in_visual == 1 && next_word =~ "\\w$" && &selection == 'inclusive'
+"           exec 'norm! h'
+"       endif
 
-"    if in_visual == 1 && (next_word =~  "\\W$") && &selection == 'exclusive'
-"        exec 'norm! l'
-"    endif
-
-    let @s = temp_reg
-    "    echo "Swap: " . a:swap_list['name'] .' '. a:cur_word . " > " . next_word
-    "\. ' ' . word_index . ' ' . a:direction . ' ' . len(word_options)
-    return 1
+"       if in_visual == 1 && (next_word =~  "\\W$") && &selection == 'exclusive'
+"           exec 'norm! l'
+"       endif
+        return 1
+    finally
+        call setreg('"', save_reg, save_regmode)
+        let &clipboard = save_clipboard
+        "    echo "Swap: " . a:swap_list['name'] .' '. a:cur_word . " > " . next_word
+        "\. ' ' . word_index . ' ' . a:direction . ' ' . len(word_options)
+    endtry
 endfun
 "
 "ShowSwapChoices() shows alternative swaps {{{2
