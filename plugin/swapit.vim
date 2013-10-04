@@ -291,6 +291,8 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
     let in_visual = 0
 
     try
+        let temp_mark = (v:version < 702 ? 'a' : '"')
+
         "XML matchit handling  {{{3
         if index(g:swap_xml_matchit, a:swap_list['name']) != -1
 
@@ -298,15 +300,17 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
                 return 0
             endif
 
-            exec "norm T<ma%"
+            exec 'norm! T<m' . temp_mark
+            norm %
 
             "If the cursor is on a / then jump to the front and mark
 
             if getline(".")[col(".") -1] != "/"
-                exec "norm ma%"
+                exec 'norm! m' . temp_mark
+                norm %
             endif
 
-            exec "norm lviw\"\"p`aviw\"\"p"
+            exec "norm! lviw\"\"pg`" . temp_mark . "viw\"\"p"
         " Regular swaps {{{3
         else
 
@@ -320,9 +324,9 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
             else
                 if next_word =~ '\W'
                     let in_visual = 1
-                    exec 'norm! maviw""p`[v`]' . (&selection ==# 'exclusive' ? 'l' : '')
+                    exec 'norm! m' . temp_mark . 'viw""pg`[vg`]' . (&selection ==# 'exclusive' ? 'l' : '')
                 else
-                    exec 'norm! maviw""pg`a'
+                    exec 'norm! m' . temp_mark . 'viw""pg`' . temp_mark
                 endif
             endif
         endif
