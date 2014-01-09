@@ -303,7 +303,7 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
             exec 'norm! T<m' . temp_mark
             norm %
 
-            "If the cursor is on a / then jump to the front and mark
+            "Always mark the start tag, and put the cursor on the end tag.
 
             if getline(".")[col(".") -1] != "/"
                 exec 'norm! m' . temp_mark
