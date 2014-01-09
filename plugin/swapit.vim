@@ -302,17 +302,24 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
 
             exec 'norm! T<m' . temp_mark
             norm %
+            let on_start_tag = 1
 
             "Always mark the start tag, and put the cursor on the end tag.
 
             if getline(".")[col(".") -1] != "/"
                 exec 'norm! m' . temp_mark
                 norm %
+                let on_start_tag = 0
             endif
 
             norm! lviw""p
             let @" = next_word  " Paste in visual mode clobbers the contents of the default register.
             exec "norm! g`" . temp_mark . "viw\"\"p"
+
+            if !on_start_tag
+                "Return to the (end) tag the swap was triggered on.
+                norm %
+            endif
         " Regular swaps {{{3
         else
 
