@@ -294,7 +294,7 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
         let temp_mark = (v:version < 702 ? 'a' : '"')
 
         "XML matchit handling  {{{3
-        if index(g:swap_xml_matchit, a:swap_list['name']) != -1
+        if index(g:swap_xml_matchit, a:swap_list['name']) != -1 && exists('g:loaded_matchit') && g:loaded_matchit " We need the matchit.vim plugin for this.
 
             if match(getline("."),"<\\(\\/".a:cur_word."\\|".a:cur_word."\\)[^>]*>" ) == -1
                 return 0
