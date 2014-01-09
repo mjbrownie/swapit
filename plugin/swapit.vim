@@ -310,7 +310,9 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
                 norm %
             endif
 
-            exec "norm! lviw\"\"pg`" . temp_mark . "viw\"\"p"
+            norm! lviw""p
+            let @" = next_word  " Paste in visual mode clobbers the contents of the default register.
+            exec "norm! g`" . temp_mark . "viw\"\"p"
         " Regular swaps {{{3
         else
 
