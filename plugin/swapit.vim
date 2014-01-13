@@ -294,7 +294,7 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
         let temp_mark = (v:version < 702 ? 'a' : '"')
 
         "XML matchit handling  {{{3
-        if index(g:swap_xml_matchit, a:swap_list['name']) != -1
+        if index(g:swap_xml_matchit, a:swap_list['name']) != -1 && exists('g:loaded_matchit') && g:loaded_matchit " We need the matchit.vim plugin for this.
 
             if match(getline("."),"<\\(\\/".a:cur_word."\\|".a:cur_word."\\)[^>]*>" ) == -1
                 return 0
@@ -302,15 +302,24 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
 
             exec 'norm! T<m' . temp_mark
             norm %
+            let on_start_tag = 1
 
-            "If the cursor is on a / then jump to the front and mark
+            "Always mark the start tag, and put the cursor on the end tag.
 
             if getline(".")[col(".") -1] != "/"
                 exec 'norm! m' . temp_mark
                 norm %
+                let on_start_tag = 0
             endif
 
-            exec "norm! lviw\"\"pg`" . temp_mark . "viw\"\"p"
+            norm! lviw""p
+            let @" = next_word  " Paste in visual mode clobbers the contents of the default register.
+            exec "norm! g`" . temp_mark . "viw\"\"p"
+
+            if !on_start_tag
+                "Return to the (end) tag the swap was triggered on.
+                norm %
+            endif
         " Regular swaps {{{3
         else
 
