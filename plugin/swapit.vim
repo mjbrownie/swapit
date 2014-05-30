@@ -203,7 +203,18 @@ endfun
 
 " <SID>GetLists() accessor for swap lists {{{2
 fun! s:GetLists()
-    return (g:swap_list_dont_append == 'yes' ? g:swap_lists : g:swap_lists + g:default_swap_list)
+    if g:swap_list_dont_append == 'yes'
+        return g:swap_lists
+    else
+        let lists = copy(g:swap_lists)
+        let names = map(copy(g:swap_lists), 'v:val.name')
+        for swap_list in g:default_swap_list
+            if index(names, swap_list.name) == -1
+                call add(lists, swap_list)
+            endif
+        endfor
+        return lists
+    endif
 endfun
 
 "SwapWord() main processiong event function {{{2
