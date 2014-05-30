@@ -201,6 +201,11 @@ fun! s:GetSelection()
     return selection
 endfun
 
+" <SID>GetLists() accessor for swap lists {{{2
+fun! s:GetLists()
+    return (g:swap_list_dont_append == 'yes' ? g:swap_lists : g:swap_lists + g:default_swap_list)
+endfun
+
 "SwapWord() main processiong event function {{{2
 fun! SwapWord (word, count, direction, is_visual)
 
@@ -213,17 +218,11 @@ fun! SwapWord (word, count, direction, is_visual)
         endif
     endif
 
-    if g:swap_list_dont_append == 'yes'
-        let test_lists =  g:swap_lists
-    else
-        let test_lists =  g:swap_lists + g:default_swap_list
-    endif
-
     let cur_word = a:word
     let match_list = []
 
     " Main for loop over each swaplist {{{3
-    for swap_list  in test_lists
+    for swap_list in s:GetLists()
         let word_options = swap_list['options']
         let word_index = index(word_options, cur_word)
 
@@ -412,7 +411,7 @@ endfun
 "
 "SwapInsert() call a swap list from insert mode
 fun! SwapInsert()
-    for swap_list  in (g:swap_lists + g:default_swap_list)
+    for swap_list in s:GetLists()
         if swap_list['name'] == @s
             call complete(col('.'), swap_list['options'])
             return ''
