@@ -457,11 +457,9 @@ fun! LoadFileTypeSwapList()
     "Initializing  the list {{{3
 "    call ClearSwapList()
     let b:swap_lists = []
-    let g:swap_list = []
     let g:swap_xml_matchit = []
 
     let ftpath = "~/.vim/after/ftplugin/". &filetype ."_swapit.vim"
-    let b:swap_lists = []
     if filereadable(ftpath)
         exec "source " . ftpath
     endif
