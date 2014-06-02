@@ -77,20 +77,6 @@
 "               with custom execs eg.
 "               exec "SwapList function_scope private protected public"
 "
-"               For this alpha version multi word swap list is a bit trickier
-"               to to define. You can add to the swap list directly using .
-"
-"                 call add(g:swap_lists, {'name':'Multi Word Example',
-"                             \'options': ['swap with spaces',
-"                             \'swap with  @#$@# chars in it' , \
-"                             \'running out of ideas here...']})
-"
-"               Future versions will make this cleaner
-"
-"               Also if you have a spur of the moment Idea type
-"               :SwapIdea
-"               To get to the current filetypes swapit file
-"
 "               4. Insert mode completion
 "
 "               You can use a swap list in insert mode by typing the list name
@@ -149,11 +135,7 @@
 "    finish
 "endif
 let g:loaded_swapit = 1
-let g:swap_xml_matchit = []
 
-if !exists('g:swap_lists')
-    let g:swap_lists = []
-endif
 if !exists('g:swap_list_dont_append')
     let g:swap_list_dont_append = 'no'
 endif
@@ -179,7 +161,7 @@ vnoremap <silent><c-x> :<c-u>let swap_count = v:count<Bar>call SwapWord(<SID>Get
 
 " For adding lists
 com! -nargs=* SwapList call AddSwapList(<q-args>)
-com! ClearSwapList let g:swap_lists = []
+com! ClearSwapList let b:swap_lists = []
 com! SwapIdea call OpenSwapFileType()
 com! -range -nargs=1 SwapWordVisual call SwapWord(getline('.'), 1, <f-args>,'yes')
 "au BufEnter call LoadFileTypeSwapList()
@@ -204,16 +186,18 @@ endfun
 " <SID>GetLists() accessor for swap lists {{{2
 fun! s:GetLists()
     if g:swap_list_dont_append == 'yes'
-        return g:swap_lists
-    else
-        let lists = copy(g:swap_lists)
-        let names = map(copy(g:swap_lists), 'v:val.name')
+        return exists('b:swap_lists') ? b:swap_lists : []
+    elseif exists('b:swap_lists')
+        let lists = copy(b:swap_lists)
+        let names = map(copy(b:swap_lists), 'v:val.name')
         for swap_list in g:default_swap_list
             if index(names, swap_list.name) == -1
                 call add(lists, swap_list)
             endif
         endfor
         return lists
+    else
+        return g:default_swap_list
     endif
 endfun
 
@@ -304,7 +288,7 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
         let temp_mark = (v:version < 702 ? 'a' : '"')
 
         "XML matchit handling  {{{3
-        if index(g:swap_xml_matchit, a:swap_list['name']) != -1 && exists('g:loaded_matchit') && g:loaded_matchit " We need the matchit.vim plugin for this.
+        if exists('b:swap_xml_matchit') && index(b:swap_xml_matchit, a:swap_list['name']) != -1 && exists('g:loaded_matchit') && g:loaded_matchit " We need the matchit.vim plugin for this.
 
             if match(getline("."),"<\\(\\/".a:cur_word."\\|".a:cur_word."\\)[^>]*>" ) == -1
                 return 0
@@ -444,11 +428,12 @@ fun! AddSwapList(s_list)
 
     let list_name = remove (word_list,0)
 
-    call add(g:swap_lists,{'name':list_name, 'options':word_list})
+    if !exists('b:swap_lists') | let b:swap_lists = [] | endif
+    call add(b:swap_lists,{'name':list_name, 'options':word_list})
 endfun
 
 fun! AddSwapXmlMatchit(s_list)
-    let g:swap_xml_matchit = split(a:s_list,'\s\+')
+    let b:swap_xml_matchit = split(a:s_list,'\s\+')
 endfun
 "LoadFileTypeSwapList() "{{{2
 "sources .vim/after/ftplugins/<file_type>_swapit.vim
@@ -456,12 +441,9 @@ fun! LoadFileTypeSwapList()
 
     "Initializing  the list {{{3
 "    call ClearSwapList()
-    let g:swap_lists = []
-    let g:swap_list = []
-    let g:swap_xml_matchit = []
+    let b:swap_lists = []
 
     let ftpath = "~/.vim/after/ftplugin/". &filetype ."_swapit.vim"
-    let g:swap_lists = []
     if filereadable(ftpath)
         exec "source " . ftpath
     endif
