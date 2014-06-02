@@ -149,7 +149,6 @@
 "    finish
 "endif
 let g:loaded_swapit = 1
-let g:swap_xml_matchit = []
 
 if !exists('g:swap_list_dont_append')
     let g:swap_list_dont_append = 'no'
@@ -303,7 +302,7 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
         let temp_mark = (v:version < 702 ? 'a' : '"')
 
         "XML matchit handling  {{{3
-        if index(g:swap_xml_matchit, a:swap_list['name']) != -1 && exists('g:loaded_matchit') && g:loaded_matchit " We need the matchit.vim plugin for this.
+        if exists('b:swap_xml_matchit') && index(b:swap_xml_matchit, a:swap_list['name']) != -1 && exists('g:loaded_matchit') && g:loaded_matchit " We need the matchit.vim plugin for this.
 
             if match(getline("."),"<\\(\\/".a:cur_word."\\|".a:cur_word."\\)[^>]*>" ) == -1
                 return 0
@@ -448,7 +447,7 @@ fun! AddSwapList(s_list)
 endfun
 
 fun! AddSwapXmlMatchit(s_list)
-    let g:swap_xml_matchit = split(a:s_list,'\s\+')
+    let b:swap_xml_matchit = split(a:s_list,'\s\+')
 endfun
 "LoadFileTypeSwapList() "{{{2
 "sources .vim/after/ftplugins/<file_type>_swapit.vim
@@ -457,7 +456,6 @@ fun! LoadFileTypeSwapList()
     "Initializing  the list {{{3
 "    call ClearSwapList()
     let b:swap_lists = []
-    let g:swap_xml_matchit = []
 
     let ftpath = "~/.vim/after/ftplugin/". &filetype ."_swapit.vim"
     if filereadable(ftpath)
