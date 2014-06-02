@@ -77,20 +77,6 @@
 "               with custom execs eg.
 "               exec "SwapList function_scope private protected public"
 "
-"               For this alpha version multi word swap list is a bit trickier
-"               to to define. You can add to the swap list directly using .
-"
-"                 call add(b:swap_lists, {'name':'Multi Word Example',
-"                             \'options': ['swap with spaces',
-"                             \'swap with  @#$@# chars in it' , \
-"                             \'running out of ideas here...']})
-"
-"               Future versions will make this cleaner
-"
-"               Also if you have a spur of the moment Idea type
-"               :SwapIdea
-"               To get to the current filetypes swapit file
-"
 "               4. Insert mode completion
 "
 "               You can use a swap list in insert mode by typing the list name
