@@ -488,5 +488,33 @@ endif
 "
 "capability
 
+fun! s:swapitSyntaxHighlight()
+
+    highlight SwapIt ctermbg=green guibg=green
+
+    let swapset = []
+
+    if exists('b:swap_lists')
+        let match_list = b:swap_lists + g:default_swap_list
+    else
+        let match_list = g:default_swap_list
+    endif
+
+    for swap_list in match_list
+        "TODO this as is would not handle special characters.
+        let swap_options = join(filter(copy(swap_list['options']), 'v:val =~ "^[a-zA-Z0-9]\\+$"'), '\|')
+        call add(swapset, swap_options)
+    endfor
+    let b:swapit_regexp = '\<\('. join(swapset,'\|') .'\)\>'
+    let b:swapit_highlight =  matchadd("SwapIt", b:swapit_regexp)
+endfun
+
+fun! s:swapitDeleteSyntaxHighlight()
+    call matchdelete(b:swapit_highlight)
+endfun
+
+
+com! SwapItSyntax call s:swapitSyntaxHighlight()
+com! SwapItSyntaxOff call s:swapitDeleteSyntaxHighlight()
 " modeline: {{{
 " vim: expandtab softtabstop=4 shiftwidth=4 foldmethod=marker
