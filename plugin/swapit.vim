@@ -164,8 +164,6 @@ com! -nargs=* SwapList call AddSwapList(<q-args>)
 com! ClearSwapList let b:swap_lists = []
 com! SwapIdea call OpenSwapFileType()
 com! -range -nargs=1 SwapWordVisual call SwapWord(getline('.'), 1, <f-args>,'yes')
-"au BufEnter call LoadFileTypeSwapList()
-com! SwapListLoadFT call LoadFileTypeSwapList()
 com! -nargs=+ SwapXmlMatchit call AddSwapXmlMatchit(<q-args>)
 "Swap Processing Functions {{{1
 "
@@ -435,21 +433,6 @@ endfun
 fun! AddSwapXmlMatchit(s_list)
     let b:swap_xml_matchit = split(a:s_list,'\s\+')
 endfun
-"LoadFileTypeSwapList() "{{{2
-"sources .vim/after/ftplugins/<file_type>_swapit.vim
-fun! LoadFileTypeSwapList()
-
-    "Initializing  the list {{{3
-"    call ClearSwapList()
-    let b:swap_lists = []
-
-    let ftpath = "~/.vim/after/ftplugin/". &filetype ."_swapit.vim"
-    if filereadable(ftpath)
-        exec "source " . ftpath
-    endif
-
-endfun
-
 "OpenSwapFileType() Quick Access to filtype file {{{2
 fun! OpenSwapFileType()
     let ftpath = "~/.vim/after/ftplugin/". &filetype ."_swapit.vim"
