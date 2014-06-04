@@ -161,8 +161,8 @@ vnoremap <silent><c-x> :<c-u>let swap_count = v:count<Bar>call SwapWord(<SID>Get
 
 " For adding lists
 com! -nargs=* SwapList call AddSwapList(<q-args>)
-com! ClearSwapList let b:swap_lists = []
-com! SwapIdea call OpenSwapFileType()
+com! -bar ClearSwapList let b:swap_lists = []
+com! -bar SwapIdea call OpenSwapFileType()
 com! -range -nargs=1 SwapWordVisual call SwapWord(getline('.'), 1, <f-args>,'yes')
 "au BufEnter call LoadFileTypeSwapList()
 com! SwapListLoadFT call LoadFileTypeSwapList()
