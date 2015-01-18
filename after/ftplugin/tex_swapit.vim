@@ -1,3 +1,5 @@
+ClearSwapList
+
 SwapList font_sizes tiny scriptsize footnotesize small normalsize large Large LARGE huge Huge
 SwapList math_sizes displaystyle scriptstyle scriptscriptstyle textstyle
 SwapList sectioning part chapter section subsection subsubsection paragraph subparagraph
