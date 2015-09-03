@@ -154,11 +154,11 @@ endif
 " For executing the listing
 nnoremap <silent><Plug>SwapIncrement :<c-u>let swap_count = v:count<Bar>
             \call SwapWord(expand("<cword>"), swap_count, 'forward', 'no')<Bar>
-            \call repeat#set("\<Plug>SwapIncrement", swap_count)<Bar>
+            \silent! call repeat#set("\<Plug>SwapIncrement", swap_count)<Bar>
             \unlet swap_count<CR>
 nnoremap <silent><Plug>SwapDecrement :<c-u>let swap_count = v:count<Bar>
             \call SwapWord(expand("<cword>"), swap_count, 'backward','no')<Bar>
-            \call repeat#set("\<Plug>SwapDecrement", swap_count)<Bar>
+            \silent! call repeat#set("\<Plug>SwapDecrement", swap_count)<Bar>
             \unlet swap_count<CR>
 nmap <silent><c-a> <Plug>SwapIncrement
 nmap <silent><c-x> <Plug>SwapDecrement
