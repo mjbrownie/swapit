@@ -152,8 +152,16 @@ endif
 "Command/AutoCommand Configuration {{{1
 "
 " For executing the listing
-nnoremap <silent><c-a> :<c-u>call SwapWord(expand("<cword>"), v:count, 'forward', 'no')<cr>
-nnoremap <silent><c-x> :<c-u>call SwapWord(expand("<cword>"), v:count, 'backward','no')<cr>
+nnoremap <silent><Plug>SwapIncrement :<c-u>let swap_count = v:count<Bar>
+            \call SwapWord(expand("<cword>"), swap_count, 'forward', 'no')<Bar>
+            \call repeat#set("\<Plug>SwapIncrement", swap_count)<Bar>
+            \unlet swap_count<CR>
+nnoremap <silent><Plug>SwapDecrement :<c-u>let swap_count = v:count<Bar>
+            \call SwapWord(expand("<cword>"), swap_count, 'backward','no')<Bar>
+            \call repeat#set("\<Plug>SwapDecrement", swap_count)<Bar>
+            \unlet swap_count<CR>
+nmap <silent><c-a> <Plug>SwapIncrement
+nmap <silent><c-x> <Plug>SwapDecrement
 vnoremap <silent><c-a> :<c-u>let swap_count = v:count<Bar>call SwapWord(<SID>GetSelection(), swap_count, 'forward', 'yes')<Bar>unlet swap_count<cr>
 vnoremap <silent><c-x> :<c-u>let swap_count = v:count<Bar>call SwapWord(<SID>GetSelection(), swap_count, 'backward','yes')<Bar>unlet swap_count<cr>
 "inoremap <silent><c-b> <esc>b"sdwi <c-r>=SwapInsert()<cr>
