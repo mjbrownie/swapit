@@ -300,6 +300,9 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
                 return 0
             endif
 
+            let save_foldenable = &l:foldenable
+            setlocal nofoldenable
+
             exec 'norm! T<m' . temp_mark
             norm %
             let on_start_tag = 1
@@ -356,6 +359,7 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
     finally
         call setreg('"', save_reg, save_regmode)
         let &clipboard = save_clipboard
+        if exists('save_foldenable') | let &l:foldenable = save_foldenable | endif
         "    echo "Swap: " . a:swap_list['name'] .' '. a:cur_word . " > " . next_word
         "\. ' ' . word_index . ' ' . a:direction . ' ' . len(word_options)
     endtry
