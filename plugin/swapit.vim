@@ -476,7 +476,7 @@ else
                 \{'name':'ON/OFF', 'options': ['ON','OFF']},
                 \{'name':'comparison_operator', 'options': ['<','<=','==', '>=', '>' , '=~', '!=']},
                 \{'name':'boolean_operator', 'options': ['&&','||']},                
-                \{'name': 'datatype', 'options': ['bool', 'char','int','unsigned int', 'float','long', 'double']},
+                \{'name':'datatype', 'options': ['bool', 'char','int','unsigned int', 'float','long', 'double']},
                 \{'name':'weekday', 'options': ['Sunday','Monday', 'Tuesday', 'Wednesday','Thursday', 'Friday', 'Saturday']},
                 \]
 endif
