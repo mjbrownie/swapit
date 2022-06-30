@@ -334,6 +334,13 @@ fun! SwapMatch(swap_list, cur_word, count, direction, is_visual)
                     exec 'norm! gv""pg`['
                 endif
             else
+
+                "if the letter the cursor is not the first letter of the cur_word,
+                " move forward to the start of the word. (see #32)
+                if getline(".")[col(".") -1] != a:cur_word[0]
+                    exec 'norm f' . a:cur_word[0]
+                endif
+
                 if next_word =~ '\W'
                     let in_visual = 1
                     exec 'norm! m' . temp_mark . 'viw""pg`[vg`]' . (&selection ==# 'exclusive' ? 'l' : '')
